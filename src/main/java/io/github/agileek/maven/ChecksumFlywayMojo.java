@@ -46,6 +46,9 @@ public class ChecksumFlywayMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
+    @Parameter(name = "extensions", required = false)
+    String[] extensions = {".java"};
+
 
     @Override
     public final void execute() throws MojoExecutionException, MojoFailureException {
@@ -58,6 +61,7 @@ public class ChecksumFlywayMojo extends AbstractMojo {
             //noinspection ResultOfMethodCallIgnored
             file.mkdirs();
             javaFile.build(file, (PrintStream) null);
+            project.addCompileSourceRoot(outputDirectory);
         } catch (Exception e) {
             throw new MojoFailureException("Failure", e);
         }
@@ -92,7 +96,12 @@ public class ChecksumFlywayMojo extends AbstractMojo {
                 File[] java = file.listFiles(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                        return name.endsWith(".java");
+                        for (String extension : extensions) {
+                            if (name.endsWith(extension)) {
+                                return true;
+                            }
+                        }
+                        return false;
                     }
                 });
                 if (java != null) {
